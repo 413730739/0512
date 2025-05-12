@@ -33,40 +33,41 @@ function setup() {
 }
 
 function draw() {
-  background(0);
-  video.loadPixels();
+  background(144, 238, 144); // Set background to light green
+
+  // Center the video feed on the canvas
+  let videoX = (width - video.width) / 2;
+  let videoY = (height - video.height) / 2;
+
+  // Display the video feed at the center
+  image(video, videoX, videoY);
 
   if (faces.length > 0) {
     let face = faces[0];
 
-    randomSeed(5);
-    beginShape(TRIANGLES);
-    
-    // Loop through each triangle and fill it with sampled pixel color
-    for (let i = 0; i < triangles.length; i++) {
-      let tri = triangles[i];
-      let [a, b, c] = tri;
-      let pointA = face.keypoints[a];
-      let pointB = face.keypoints[b];
-      let pointC = face.keypoints[c];
+    // Define the indices for the mouth, left eye, and right eye
+    let mouthIndices = [409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 76, 77, 90, 180, 85, 16, 315, 404, 320, 307, 306, 408, 304, 303, 302, 11, 72, 73, 74, 184];
+    let leftEyeIndices = [243, 190, 56, 28, 27, 29, 30, 247, 130, 25, 110, 24, 23, 22, 26, 112, 133, 173, 157, 158, 159, 160, 161, 246, 33, 7, 163, 144, 145, 153, 154, 155];
+    let rightEyeIndices = [359, 467, 260, 259, 257, 258, 286, 444, 463, 341, 256, 252, 253, 254, 339, 255, 263, 466, 388, 387, 386, 385, 384, 398, 362, 382, 381, 380, 374, 373, 390, 249];
 
-      // Calculate the centroid of the triangle
-      let cx = (pointA.x + pointB.x + pointC.x) / 3;
-      let cy = (pointA.y + pointB.y + pointC.y) / 3;
+    stroke(255, 0, 0); // Set stroke color to red
+    strokeWeight(2); // Set line thickness
 
-      // Get color from video pixels at centroid location
-      let index = (floor(cx) + floor(cy) * video.width) * 4;
-      let rr = video.pixels[index];
-      let gg = video.pixels[index + 1];
-      let bb = video.pixels[index + 2];
-
-      stroke(255, 255, 0);
-      fill(rr, gg, bb);
-      vertex(pointA.x, pointA.y);
-      vertex(pointB.x, pointB.y);
-      vertex(pointC.x, pointC.y);
+    // Function to draw lines connecting points
+    function drawConnections(indices) {
+      beginShape();
+      for (let i = 0; i < indices.length; i++) {
+        let point = face.keypoints[indices[i]];
+        let x = point.x + videoX;
+        let y = point.y + videoY;
+        vertex(x, y);
+      }
+      endShape(CLOSE);
     }
-    
-    endShape();
+
+    // Draw connections for mouth, left eye, and right eye
+    drawConnections(mouthIndices);
+    drawConnections(leftEyeIndices);
+    drawConnections(rightEyeIndices);
   }
 }
