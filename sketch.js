@@ -1,24 +1,18 @@
-// Face Mesh Texture Mapping
-// https://thecodingtrain.com/tracks/ml5js-beginners-guide/ml5/facemesh
-// https://youtu.be/R5UZsIwPbJA
+// Face Mesh Detection - Triangulated Face Mapping  
+// https://thecodingtrain.com/tracks/ml5js-beginners-guide/ml5/facemesh  
+// https://youtu.be/R5UZsIwPbJA  
 
 let video;
 let faceMesh;
 let faces = [];
 let triangles;
-let uvCoords;
-let img;
 
 function preload() {
-  // Initialize FaceMesh model with a maximum of one face
-  faceMesh = ml5.faceMesh({ maxFaces: 1 });
-
-  // Load the texture image that will be mapped onto the face mesh
-  img = loadImage("Zombie_Dan_mesh_map.png");
+  // Load FaceMesh model 
+  faceMesh = ml5.faceMesh({ maxFaces: 1, flipped: true });
 }
 
 function mousePressed() {
-  // Log detected face data to the console
   console.log(faces);
 }
 
@@ -27,20 +21,52 @@ function gotFaces(results) {
 }
 
 function setup() {
-  createCanvas(640, 480, WEBGL);
-  video = createCapture(VIDEO);
+  createCanvas(640, 480);
+  video = createCapture(VIDEO, { flipped: true });
   video.hide();
 
   // Start detecting faces
   faceMesh.detectStart(video, gotFaces);
 
-  // Retrieve face mesh triangles and UV coordinates
+  // Get predefined triangle connections
   triangles = faceMesh.getTriangles();
-  uvCoords = faceMesh.getUVCoords();
 }
 
 function draw() {
-  translate(-width / 2, -height / 2);
-  background(144, 238, 144);
-  image(video, 0, 0);
+  background(0);
+  video.loadPixels();
+
+  if (faces.length > 0) {
+    let face = faces[0];
+
+    randomSeed(5);
+    beginShape(TRIANGLES);
+    
+    // Loop through each triangle and fill it with sampled pixel color
+    for (let i = 0; i < triangles.length; i++) {
+      let tri = triangles[i];
+      let [a, b, c] = tri;
+      let pointA = face.keypoints[a];
+      let pointB = face.keypoints[b];
+      let pointC = face.keypoints[c];
+
+      // Calculate the centroid of the triangle
+      let cx = (pointA.x + pointB.x + pointC.x) / 3;
+      let cy = (pointA.y + pointB.y + pointC.y) / 3;
+
+      // Get color from video pixels at centroid location
+      let index = (floor(cx) + floor(cy) * video.width) * 4;
+      let rr = video.pixels[index];
+      let gg = video.pixels[index + 1];
+      let bb = video.pixels[index + 2];
+
+      stroke(255, 255, 0);
+      fill(rr, gg, bb);
+      vertex(pointA.x, pointA.y);
+      vertex(pointB.x, pointB.y);
+      vertex(pointC.x, pointC.y);
+    }
+    
+    endShape();
+  }
 }
