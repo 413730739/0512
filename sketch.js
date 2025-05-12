@@ -42,7 +42,7 @@ function setup() {
 function draw() {
   // Center the 3D space to align with the canvas
   translate(-width / 2, -height / 2);
-  background(0);
+  background(144, 238, 144); // Set background to light green
 
   // Display the video feed
   image(video, 0, 0);
@@ -50,35 +50,41 @@ function draw() {
   if (faces.length > 0) {
     let face = faces[0];
 
-    // Apply texture mapping to the detected face mesh
-    texture(img);
-    textureMode(NORMAL);
-    noStroke();
-    beginShape(TRIANGLES);
+    // Define the indices for the mouth, left eye, and right eye
+    let mouthIndices = [409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 76, 77, 90, 180, 85, 16, 315, 404, 320, 307, 306, 408, 304, 303, 302, 11, 72, 73, 74, 184];
+    let leftEyeIndices = [243, 190, 56, 28, 27, 29, 30, 247, 130, 25, 110, 24, 23, 22, 26, 112, 133, 173, 157, 158, 159, 160, 161, 246, 33, 7, 163, 144, 145, 153, 154, 155];
+    let rightEyeIndices = [359, 467, 260, 259, 257, 258, 286, 444, 463, 341, 256, 252, 253, 254, 339, 255, 263, 466, 388, 387, 386, 385, 384, 398, 362, 382, 381, 380, 374, 373, 390, 249];
 
-    // Loop through each triangle in the face mesh
-    for (let i = 0; i < triangles.length; i++) {
-      let tri = triangles[i];
+    noFill();
+    stroke(255, 0, 0); // Red for mouth
+    strokeWeight(2);
 
-      // Get the indices of the three points that form a triangle
-      let [a, b, c] = tri;
-
-      // Retrieve the corresponding 2D face keypoints
-      let pointA = face.keypoints[a];
-      let pointB = face.keypoints[b];
-      let pointC = face.keypoints[c];
-
-      // Retrieve the corresponding UV coordinates for texture mapping
-      let uvA = uvCoords[a];
-      let uvB = uvCoords[b];
-      let uvC = uvCoords[c];
-
-      // Define the triangle with both position (x, y) and UV texture coordinates
-      vertex(pointA.x, pointA.y, uvA[0], uvA[1]);
-      vertex(pointB.x, pointB.y, uvB[0], uvB[1]);
-      vertex(pointC.x, pointC.y, uvC[0], uvC[1]);
+    // Draw lines connecting the mouth points
+    beginShape();
+    for (let i = 0; i < mouthIndices.length; i++) {
+      let point = face.keypoints[mouthIndices[i]];
+      vertex(point.x, point.y);
     }
+    endShape(CLOSE);
 
-    endShape();
+    stroke(0, 255, 0); // Green for left eye
+
+    // Draw lines connecting the left eye points
+    beginShape();
+    for (let i = 0; i < leftEyeIndices.length; i++) {
+      let point = face.keypoints[leftEyeIndices[i]];
+      vertex(point.x, point.y);
+    }
+    endShape(CLOSE);
+
+    stroke(0, 0, 255); // Blue for right eye
+
+    // Draw lines connecting the right eye points
+    beginShape();
+    for (let i = 0; i < rightEyeIndices.length; i++) {
+      let point = face.keypoints[rightEyeIndices[i]];
+      vertex(point.x, point.y);
+    }
+    endShape(CLOSE);
   }
 }
